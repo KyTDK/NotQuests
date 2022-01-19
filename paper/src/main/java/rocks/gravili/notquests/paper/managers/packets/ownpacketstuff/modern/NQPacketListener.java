@@ -7,6 +7,7 @@ import io.papermc.paper.adventure.PaperAdventure;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.protocol.game.ClientboundChatPacket;
@@ -15,6 +16,7 @@ import org.bukkit.entity.Player;
 import rocks.gravili.notquests.paper.NotQuests;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class NQPacketListener extends ChannelDuplexHandler {
     private final NotQuests main;
@@ -27,7 +29,6 @@ public class NQPacketListener extends ChannelDuplexHandler {
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        super.write(ctx, msg, promise);
         if (!main.getPacketManager().getModernPacketInjector().isPacketStuffEnabled()) {
             return;
         }
@@ -41,7 +42,45 @@ public class NQPacketListener extends ChannelDuplexHandler {
                 }
                 main.getLogManager().debug("Valid chat packet! Type: " + clientboundChatPacket.getType().toString());
 
-                handleMainChatHistorySavingLogic(clientboundChatPacket, player);
+                net.minecraft.network.chat.Component vanillaMessage = clientboundChatPacket.getMessage();
+                BaseComponent[] spigotComponent = clientboundChatPacket.components;
+                Component adventureComponent = clientboundChatPacket.adventure$message;
+
+
+                if (vanillaMessage == null && spigotComponent == null && adventureComponent == null) {
+                    main.getLogManager().debug("All null :o");
+                    return;
+                }
+
+
+                if (adventureComponent == null) { //Spigot shit
+
+                    if (spigotComponent != null) {
+                        adventureComponent = BungeeComponentSerializer.get().deserialize(spigotComponent);
+
+                    } else {//vanilla shit
+                        try {//paper only
+                            adventureComponent = PaperAdventure.asAdventure(vanillaMessage);
+
+                            main.getLogManager().debug("vanilla serializer: " + adventureComponent.getClass().toString());
+                        } catch (Exception e) {
+                            if (main.getConfiguration().debug) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                    }
+                }
+
+                String plain = PlainTextComponentSerializer.plainText().serialize(adventureComponent).toLowerCase(Locale.ROOT);
+
+                if( plain.contains("spigotmc.org") || ((plain.contains("version") || plain.contains("update")) && (plain.contains("download") || plain.contains("old") || plain.contains("new") || plain.contains("spigotmc.org")))){
+                }else{
+                    super.write(ctx, msg, promise);
+                    handleMainChatHistorySavingLogic(clientboundChatPacket, player);
+                }
+
+
             } catch (Exception e) {
                 if (main.getConfiguration().debug) {
                     e.printStackTrace();
@@ -52,8 +91,11 @@ public class NQPacketListener extends ChannelDuplexHandler {
 
         }else if (msg instanceof ClientboundSectionBlocksUpdatePacket clientboundSectionBlocksUpdatePacket) {
             //player.sendMessage("ClientboundSectionBlocksUpdatePacket");
+            super.write(ctx, msg, promise);
 
             msg = null;
+        }else{
+            super.write(ctx, msg, promise);
         }
     }
 
@@ -89,6 +131,7 @@ public class NQPacketListener extends ChannelDuplexHandler {
 
                 }
             }
+
 
 
             final ArrayList<Component> convHist = main.getConversationManager().getConversationChatHistory().get(player.getUniqueId());
