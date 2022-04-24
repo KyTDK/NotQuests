@@ -82,6 +82,8 @@ public class VariablesManager {
         registerVariable("CurrentPositionY", PlayerCurrentPositionYVariable.class);
         registerVariable("CurrentPositionZ", PlayerCurrentPositionZVariable.class);
         registerVariable("RandomNumberBetweenRange", RandomNumberBetweenRangeVariable.class);
+        registerVariable("Skill", SkillVariable.class);
+        registerVariable("AllSkills", AllSkillsVariable.class);
 
         registerVariable("Sneaking", PlayerSneakingVariable.class);
         registerVariable("Health", PlayerHealthVariable.class);

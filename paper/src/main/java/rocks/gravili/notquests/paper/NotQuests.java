@@ -145,7 +145,7 @@ public class NotQuests {
 
         logManager.lateInit(); //To initialize adventure
 
-        getLogManager().info("NotQuests (Paper) is starting...");
+        getLogManager().info("NeoQuests (Paper) is starting...");
 
         //Create a new instance of the Util Manager which will be re-used everywhere
         utilManager = new UtilManager(this);
