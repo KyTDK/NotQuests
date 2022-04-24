@@ -70,6 +70,7 @@ public class ConditionsManager {
         registerCondition("Permission", PermissionCondition.class);
         registerCondition("Money", MoneyCondition.class);
         registerCondition("WorldTime", WorldTimeCondition.class);
+        registerCondition("Skill", SkillCondition.class);
         registerCondition("UltimateClansClanLevel", UltimateClansClanLevelCondition.class);
 
         //Towny

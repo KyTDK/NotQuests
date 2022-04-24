@@ -156,6 +156,7 @@ dependencies {
 
     compileOnly("io.lumine:Mythic-Dist:5.0.2-SNAPSHOT")
     compileOnly(files("libs/EliteMobs.jar"))
+    compileOnly(files("libs/NeoSurvival-1.0-SNAPSHOT.jar"))
     compileOnly(files("libs/UClans-API.jar"))
     compileOnly(files("libs/ProjectKorra-1.9.3.jar"))
     //compileOnly(files("libs/UltimateJobs-0.2.0-SNAPSHOT.jar"))
