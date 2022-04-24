@@ -26,43 +26,35 @@ import rocks.gravili.notquests.paper.NotQuests;
 import rocks.gravili.notquests.paper.structs.QuestPlayer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-public class SkillVariable extends Variable<Integer> {
+public class AllSkillsVariable extends Variable<Integer[]> {
 
-    public SkillVariable(NotQuests main) {
+    public AllSkillsVariable(NotQuests main) {
         super(main);
-
-        addRequiredString(
-                StringArgument.<CommandSender>newBuilder("Skill").withSuggestionsProvider(
-                        (context, lastString) -> {
-                            final List<String> allArgs = context.getRawInput();
-                            main.getUtilManager().sendFancyCommandCompletion(context.getSender(), allArgs.toArray(new String[0]), "[Skill]", "[...]");
-
-                            ArrayList<String> suggestions = new ArrayList<>();
-                            suggestions.add("<Enter Skill>");
-                            return suggestions;
-
-                        }
-                ).single().build()
-        );
     }
 
     @Override
-    public Integer getValue(QuestPlayer questPlayer, Object... objects) {
-        return Api.getStats(questPlayer.getPlayer(), getRequiredStringValue("Skill"));
+    public Integer[] getValue(QuestPlayer questPlayer, Object... objects) {
+        List<Integer> skills = new ArrayList<>();
+        for (String skill : Api.getStatTable()) {
+           skills.add(Api.getStats(questPlayer.getPlayer(), skill));
+        }
+        Integer[] stockArr = new Integer[Api.getStatTable().length];
+        stockArr = skills.toArray(stockArr);
+        return stockArr;
     }
 
     @Override
-    public boolean setValueInternally(Integer newValue, QuestPlayer questPlayer, Object... objects) {
+    public boolean setValueInternally(Integer[] newValue, QuestPlayer questPlayer, Object... objects) {
         return false;
     }
 
 
-
     @Override
     public List<String> getPossibleValues(QuestPlayer questPlayer, Object... objects) {
-        return List.of(Api.getStatTable());
+        return null;
     }
 
     @Override
