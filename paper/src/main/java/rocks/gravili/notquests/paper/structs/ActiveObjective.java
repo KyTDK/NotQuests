@@ -153,6 +153,9 @@ public class ActiveObjective {
     public void addProgress(long progressToAdd) {
         addProgress(progressToAdd, -1, null, false);
     }
+    public void setProgress(long progressToSet) {
+        setProgress(progressToSet, -1, null, false);
+    }
     public void addProgress(long progressToAdd, boolean silent) {
         addProgress(progressToAdd, -1, null, silent);
     }
@@ -194,6 +197,27 @@ public class ActiveObjective {
         getQuestPlayer().sendDebugMessage("+" + progressToAdd + " progress for objective " + NotQuestColors.debugHighlightGradient + getObjective().getFinalName() + "</gradient> of quest " + NotQuestColors.debugHighlightGradient + getActiveQuest().getQuest().getQuestFinalName() + "</gradient>. Silent: " + silent);
     }
 
+    public void setProgress(long progressToSet, final int NPCID, final UUID armorStandUUID, boolean silent) {
+        if(main.getDataManager().isDisabled()){
+            return;
+        }
+        currentProgress = progressToSet;
+        getQuestPlayer().setTrackingObjective(this);
+
+
+        if (isCompleted(armorStandUUID)) {
+            setHasBeenCompleted(true);
+            if(armorStandUUID != null){
+                activeQuest.notifyActiveObjectiveCompleted(this, silent, armorStandUUID);
+            }else{
+                activeQuest.notifyActiveObjectiveCompleted(this, silent, NPCID);
+            }
+        }
+        if(main.getConfiguration().isDebug()){
+            main.getLogManager().debug("+" + progressToSet + " progress for objective " + NotQuestColors.debugHighlightGradient + getObjective().getFinalName() + "</gradient> of quest " + NotQuestColors.debugHighlightGradient + getActiveQuest().getQuest().getQuestFinalName() + "</gradient>. Silent: " + silent);
+        }
+        getQuestPlayer().sendDebugMessage("+" + progressToSet + " progress for objective " + NotQuestColors.debugHighlightGradient + getObjective().getFinalName() + "</gradient> of quest " + NotQuestColors.debugHighlightGradient + getActiveQuest().getQuest().getQuestFinalName() + "</gradient>. Silent: " + silent);
+    }
 
 
     public void removeProgress(int i, boolean capAtZero) {

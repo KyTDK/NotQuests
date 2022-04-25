@@ -70,6 +70,8 @@ public class ActionManager {
         registerAction("SendMessage", SendMessageAction.class);
         registerAction("BroadcastMessage", BroadcastMessageAction.class);
 
+        registerAction("GiveSkillLevel", GiveSkillLevelAction.class);
+
         registerAction("Number", NumberAction.class);
         registerAction("String", StringAction.class);
         registerAction("Boolean", BooleanAction.class);

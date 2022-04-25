@@ -19,6 +19,7 @@
 package rocks.gravili.notquests.paper.structs;
 
 
+import com.neostorm.neostorm.Api;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.title.Title;
 import org.bukkit.*;
@@ -34,6 +35,8 @@ import rocks.gravili.notquests.paper.structs.actions.Action;
 import rocks.gravili.notquests.paper.structs.conditions.Condition;
 import rocks.gravili.notquests.paper.structs.objectives.ConditionObjective;
 import rocks.gravili.notquests.paper.structs.objectives.OtherQuestObjective;
+import rocks.gravili.notquests.paper.structs.objectives.ReachSkillLevelObjective;
+import rocks.gravili.notquests.paper.structs.objectives.hooks.citizens.EscortNPCObjective;
 import rocks.gravili.notquests.paper.structs.triggers.ActiveTrigger;
 
 import java.time.Duration;
@@ -501,7 +504,6 @@ public class QuestPlayer {
 
 
     private void finishAddingQuest(final ActiveQuest activeQuest, final boolean triggerAcceptQuestTrigger, final boolean sendUpdateObjectivesUnlocked) {
-
         QuestFinishAcceptEvent questFinishAcceptEvent = new QuestFinishAcceptEvent(this, activeQuest, triggerAcceptQuestTrigger);
         if (Bukkit.isPrimaryThread()) {
             Bukkit.getScheduler().runTaskAsynchronously(main.getMain(), () -> {
@@ -515,7 +517,19 @@ public class QuestPlayer {
             return;
         }
 
-
+        //Override initial value
+        for (final ActiveObjective activeObjective : activeQuest.getActiveObjectives()) {
+            if (activeObjective.getObjective() instanceof ReachSkillLevelObjective) {
+                long progress = Api.getStats(this.getPlayer(), ((ReachSkillLevelObjective) activeObjective.getObjective()).getSkillToLevelUp());
+                if ( progress <= 0) {
+                    activeObjective.addProgress(activeObjective.getObjective().getProgressNeeded());
+            }
+                else {
+                    activeObjective.addProgress(progress);
+                }
+            }
+        }
+        this.
         activeQuests.add(activeQuest);
         activeQuestsCopy.add(activeQuest);
 

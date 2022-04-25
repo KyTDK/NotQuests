@@ -72,7 +72,6 @@ public class QuestPlayer {
     }
 
     public String addActiveQuest(final ActiveQuest quest, final boolean triggerAcceptQuestTrigger, final boolean sendQuestInfo) {
-
         //Configuration Option: general.max-active-quests-per-player
         if (main.getConfiguration().getMaxActiveQuestsPerPlayer() != -1 && activeQuests.size() >= main.getConfiguration().getMaxActiveQuestsPerPlayer()) {
             return "<RED>You can not accept more than <AQUA>" + main.getConfiguration().getMaxActiveQuestsPerPlayer() + "</AQUA> Quests.";
@@ -198,7 +197,6 @@ public class QuestPlayer {
 
 
     private void finishAddingQuest(final ActiveQuest activeQuest, boolean triggerAcceptQuestTrigger, final boolean sendUpdateObjectivesUnlocked) {
-
         QuestFinishAcceptEvent questFinishAcceptEvent = new QuestFinishAcceptEvent(this, activeQuest, triggerAcceptQuestTrigger);
         if (Bukkit.isPrimaryThread()) {
             Bukkit.getScheduler().runTaskAsynchronously(main.getMain(), () -> {
