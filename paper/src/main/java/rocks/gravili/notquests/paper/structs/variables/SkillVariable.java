@@ -55,9 +55,8 @@ public class SkillVariable extends Variable<Integer> {
 
     @Override
     public boolean setValueInternally(Integer newValue, QuestPlayer questPlayer, Object... objects) {
-        return false;
+        return true;
     }
-
 
 
     @Override

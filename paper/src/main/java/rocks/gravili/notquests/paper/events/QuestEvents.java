@@ -22,6 +22,7 @@ package rocks.gravili.notquests.paper.events;
 import static rocks.gravili.notquests.paper.commands.NotQuestColors.debugHighlightGradient;
 
 import com.destroystokyo.paper.event.player.PlayerJumpEvent;
+import com.neostorm.neostorm.Api;
 import io.papermc.paper.event.packet.PlayerChunkLoadEvent;
 import java.util.HashMap;
 import java.util.Locale;
@@ -409,12 +410,26 @@ private void onSkillEvent(com.neostorm.neostorm.SkillEvent event){
                             }
 
                         }
+                        //Get x amount of levels
                         if (activeObjective.getObjective() instanceof SkillLevelObjective skillLevelObjective) {
                             if (activeObjective.isUnlocked()) {
                                 final String skill = event.getSkill();
                                 final int levelUpAmount = event.getLevelUpAmount();
                                 if(levelUpAmount > 0) {
                                     if (skillLevelObjective.getSkillToLevelUp().equalsIgnoreCase("any") || skillLevelObjective.getSkillToLevelUp().equalsIgnoreCase(skill)) {
+                                        activeObjective.addProgress(levelUpAmount);
+                                    }
+                                }
+                            }
+
+                        }
+                        //Reach levels
+                        if (activeObjective.getObjective() instanceof ReachSkillLevelObjective reachSkillLevelObjective) {
+                            if (activeObjective.isUnlocked()) {
+                                final String skill = event.getSkill();
+                                final int levelUpAmount = event.getLevelUpAmount();
+                                if(levelUpAmount > 0) {
+                                    if (reachSkillLevelObjective.getSkillToLevelUp().equalsIgnoreCase("any") || reachSkillLevelObjective.getSkillToLevelUp().equalsIgnoreCase(skill)) {
                                         activeObjective.addProgress(levelUpAmount);
                                     }
                                 }

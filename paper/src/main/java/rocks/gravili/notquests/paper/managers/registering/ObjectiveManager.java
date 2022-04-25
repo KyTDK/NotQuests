@@ -83,6 +83,7 @@ public class ObjectiveManager {
         registerObjective("OpenBuriedTreasure", OpenBuriedTreasureObjective.class);
         registerObjective("SkillMastery", SkillMasteryObjective.class);
         registerObjective("SkillLevel", SkillLevelObjective.class);
+        registerObjective("ReachSkillLevel", ReachSkillLevelObjective.class);
 
         //Towny
         registerObjective("TownyReachResidentCount", TownyReachResidentCountObjective.class);
