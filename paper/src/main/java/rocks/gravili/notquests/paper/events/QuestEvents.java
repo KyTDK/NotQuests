@@ -389,7 +389,47 @@ public class QuestEvents implements Listener {
 
     }
 
+@EventHandler
+private void onSkillEvent(com.neostorm.neostorm.SkillEvent event){
 
+    //Skill objectives
+    final Player player = event.getPlayer();
+    if (player != null) {
+        final QuestPlayer questPlayer = main.getQuestPlayerManager().getQuestPlayer(player.getUniqueId());
+        if (questPlayer != null) {
+            if (questPlayer.getActiveQuests().size() > 0) {
+                for (final ActiveQuest activeQuest : questPlayer.getActiveQuests()) {
+                    for (final ActiveObjective activeObjective : activeQuest.getActiveObjectives()) {
+                        if (activeObjective.getObjective() instanceof SkillMasteryObjective skillMasteryObjective) {
+                            if (activeObjective.isUnlocked()) {
+                                final String skill = event.getSkill();
+                                if (skillMasteryObjective.getSkillToMaster().equalsIgnoreCase("any") || skillMasteryObjective.getSkillToMaster().equalsIgnoreCase(skill)) {
+                                        activeObjective.addProgress(event.getMastery());
+                                }
+                            }
+
+                        }
+                        if (activeObjective.getObjective() instanceof SkillLevelObjective skillLevelObjective) {
+                            if (activeObjective.isUnlocked()) {
+                                final String skill = event.getSkill();
+                                final int levelUpAmount = event.getLevelUpAmount();
+                                if(levelUpAmount > 0) {
+                                    if (skillLevelObjective.getSkillToLevelUp().equalsIgnoreCase("any") || skillLevelObjective.getSkillToLevelUp().equalsIgnoreCase(skill)) {
+                                        activeObjective.addProgress(levelUpAmount);
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+                    activeQuest.removeCompletedObjectives(true);
+                }
+                questPlayer.removeCompletedQuests();
+            }
+        }
+    }
+
+}
 
     public final int getInventorySpaceLeftForItem(final Inventory inventory, final ItemStack item) {
         int remaining = 0;
