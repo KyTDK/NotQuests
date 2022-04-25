@@ -81,6 +81,8 @@ public class ObjectiveManager {
         registerObjective("Sneak", SneakObjective.class);
         registerObjective("SmeltItems", SmeltObjective.class);
         registerObjective("OpenBuriedTreasure", OpenBuriedTreasureObjective.class);
+        registerObjective("SkillMastery", SkillMasteryObjective.class);
+        registerObjective("SkillLevel", SkillLevelObjective.class);
 
         //Towny
         registerObjective("TownyReachResidentCount", TownyReachResidentCountObjective.class);
