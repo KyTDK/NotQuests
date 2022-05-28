@@ -23,16 +23,14 @@ plugins {
     `java-library`
     `maven-publish`
     id("com.github.johnrengelman.shadow") version "7.1.2"
-    id("io.papermc.paperweight.userdev") version "1.3.5"
+    id("io.papermc.paperweight.userdev") version "1.3.6"
     id("xyz.jpenilla.run-paper") version "1.0.6" // Adds runServer and runMojangMappedServer tasks for testing
     kotlin("jvm") version "1.6.21"
 }
 
 
-//extra["version"] = "4.0.0-dev1"
-
 group = "rocks.gravili.notquests"
-version = "4.19.6"
+version = "4.21.0"
 
 
 repositories {

@@ -762,7 +762,7 @@ private void onSkillEvent(com.neostorm.neostorm.SkillEvent event){
     }
 
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.HIGHEST)
     private void onEntityBreed(EntityBreedEvent e) {
         if (!e.isCancelled()) {
             if (e.getBreeder() instanceof final Player player) {
@@ -795,7 +795,7 @@ private void onSkillEvent(com.neostorm.neostorm.SkillEvent event){
     }
 
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.HIGHEST)
     private void onBlockBreak(BlockBreakEvent e) {
         if (!e.isCancelled()) {
             final Player player = e.getPlayer();
@@ -828,7 +828,7 @@ private void onSkillEvent(com.neostorm.neostorm.SkillEvent event){
 
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.HIGHEST)
     private void onBlockPlace(BlockPlaceEvent e) {
         if (!e.isCancelled()) {
             final Player player = e.getPlayer();

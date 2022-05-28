@@ -72,10 +72,8 @@ public class DataManager {
      * called by the real Tab Completer CommandNotQuestsAdmin to split it up a little.
      */
     public final List<String> completions = new ArrayList<>();
-    /**
-     * ArrayList for Command Tab Completions for players. They will be re-used where possible.
-     */
-    public final List<String> standardPlayerCompletions = new ArrayList<>();
+
+
     /**
      * ArrayList for Command Tab Completions for entity types. They will be initialized on startup be re-used where possible.
      */
@@ -88,10 +86,6 @@ public class DataManager {
      * ArrayList for Command Tab Completions for numbers from 1 to 12. They will be initialized on startup be re-used where possible.
      */
     public final List<String> numberPositiveCompletions = new ArrayList<>();
-    /**
-     * ArrayList for Command Tab Completions. They will be re-used where possible.
-     */
-    public final List<String> partialCompletions = new ArrayList<>();
 
     /**
      * ArrayList for Command Tab Completions for elitemob entity types. They will be initialized on startup if the elitemobs integration is enabled and will be re-used where possible.
@@ -159,7 +153,7 @@ public class DataManager {
 
     private boolean valueChanged = false;
 
-    private ArrayList<String> criticalErrors;
+    private final ArrayList<String> criticalErrors;
 
 
     //HikariCP
@@ -217,7 +211,7 @@ public class DataManager {
 
     public void loadCategories(final Category parent) {
 
-        File parentCategoryFolder = parent != null ? parent.getCategoryFolder() : main.getMain().getDataFolder();
+        final File parentCategoryFolder = parent != null ? parent.getCategoryFolder() : main.getMain().getDataFolder();
 
         main.getLogManager().info("Checking folder for categories: <highlight>" + parentCategoryFolder.getName());
 
@@ -229,7 +223,7 @@ public class DataManager {
 
             //1. Check if there is a category.yml
 
-            File[] fileList = categoryFolder.listFiles();
+            final File[] fileList = categoryFolder.listFiles();
             if (fileList == null) {
                 continue;
             }
@@ -244,7 +238,7 @@ public class DataManager {
 
             File conversationsFolder = null;
 
-            for (File file : fileList) {
+            for (final File file : fileList) {
                 if (file.isFile()) {
                     if (file.getName().equalsIgnoreCase("category.yml")) {
                         categoryYMLFile = file;
@@ -1448,12 +1442,12 @@ public class DataManager {
 
 
         //Create Database tables if they don't exist yet
-        try (Connection connection = getConnection();
-             PreparedStatement createQuestPlayerDataTableStatement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `QuestPlayerData` (`PlayerUUID` varchar(200), `QuestPoints` BIGINT(255), PRIMARY KEY (PlayerUUID))");
-             PreparedStatement createActiveQuestsDataTableStatement = connection.prepareStatement( "CREATE TABLE IF NOT EXISTS `ActiveQuests` (`QuestName` varchar(200), `PlayerUUID` varchar(200))" );
-             PreparedStatement createCompletedQuestsDataTableStatement = connection.prepareStatement( "CREATE TABLE IF NOT EXISTS `CompletedQuests` (`QuestName` varchar(200), `PlayerUUID` varchar(200), `TimeCompleted` BIGINT(255))" );
-             PreparedStatement createActiveObjectivesDataTableStatement = connection.prepareStatement( "CREATE TABLE IF NOT EXISTS `ActiveObjectives` (`ObjectiveType` varchar(200), `QuestName` varchar(200), `PlayerUUID` varchar(200), `CurrentProgress` BIGINT(255), `ObjectiveID` INT(255), `HasBeenCompleted` BOOLEAN)" );
-             PreparedStatement createActiveTriggersDataTableStatement = connection.prepareStatement( "CREATE TABLE IF NOT EXISTS `ActiveTriggers` (`TriggerType` varchar(200), `QuestName` varchar(200), `PlayerUUID` varchar(200), `CurrentProgress` BIGINT(255), `TriggerID` INT(255))" );
+        try (final Connection connection = getConnection();
+             final PreparedStatement createQuestPlayerDataTableStatement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `QuestPlayerData` (`PlayerUUID` varchar(200), `QuestPoints` BIGINT(255), PRIMARY KEY (PlayerUUID))");
+             final PreparedStatement createActiveQuestsDataTableStatement = connection.prepareStatement( "CREATE TABLE IF NOT EXISTS `ActiveQuests` (`QuestName` varchar(200), `PlayerUUID` varchar(200))" );
+             final PreparedStatement createCompletedQuestsDataTableStatement = connection.prepareStatement( "CREATE TABLE IF NOT EXISTS `CompletedQuests` (`QuestName` varchar(200), `PlayerUUID` varchar(200), `TimeCompleted` BIGINT(255))" );
+             final PreparedStatement createActiveObjectivesDataTableStatement = connection.prepareStatement( "CREATE TABLE IF NOT EXISTS `ActiveObjectives` (`ObjectiveType` varchar(200), `QuestName` varchar(200), `PlayerUUID` varchar(200), `CurrentProgress` BIGINT(255), `ObjectiveID` INT(255), `HasBeenCompleted` BOOLEAN)" );
+             final PreparedStatement createActiveTriggersDataTableStatement = connection.prepareStatement( "CREATE TABLE IF NOT EXISTS `ActiveTriggers` (`TriggerType` varchar(200), `QuestName` varchar(200), `PlayerUUID` varchar(200), `CurrentProgress` BIGINT(255), `TriggerID` INT(255))" );
         ) {
             main.getLogManager().info(LogCategory.DATA, "Creating database table 'QuestPlayerData' if it doesn't exist yet...");
             createQuestPlayerDataTableStatement.executeUpdate();
@@ -1470,7 +1464,7 @@ public class DataManager {
             main.getLogManager().info(LogCategory.DATA, "Creating database table 'ActiveTriggers' if it doesn't exist yet...");
             createActiveTriggersDataTableStatement.executeUpdate();
 
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             disablePluginAndSaving("Plugin disabled, because there was an error while trying to load MySQL database tables", e);
             return;
         }
@@ -1889,7 +1883,7 @@ public class DataManager {
      * This method will try to re-open the database connection statement, so data can be saved to the database
      * safely again.
      *
-     * @param newTask sets if the plugin should force an asynchronous thread to re-open the database connection. If
+     * newTask sets if the plugin should force an asynchronous thread to re-open the database connection. If
      *                set to false, it will do it in whatever thread this method is run in.
      */
     /*public void refreshDatabaseConnection(final boolean newTask) {
