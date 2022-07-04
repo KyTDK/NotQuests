@@ -19,21 +19,10 @@
 package rocks.gravili.notquests.paper.structs;
 
 
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
+import com.neostorm.neostorm.Api;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.title.Title;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
-import org.bukkit.SoundCategory;
+import org.bukkit.*;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Player;
@@ -44,11 +33,16 @@ import rocks.gravili.notquests.paper.events.notquests.QuestFinishAcceptEvent;
 import rocks.gravili.notquests.paper.events.notquests.QuestPointsChangeEvent;
 import rocks.gravili.notquests.paper.structs.actions.Action;
 import rocks.gravili.notquests.paper.structs.conditions.Condition;
-import rocks.gravili.notquests.paper.structs.conditions.Condition.ConditionResult;
 import rocks.gravili.notquests.paper.structs.objectives.ConditionObjective;
-import rocks.gravili.notquests.paper.structs.objectives.NumberVariableObjective;
 import rocks.gravili.notquests.paper.structs.objectives.OtherQuestObjective;
+import rocks.gravili.notquests.paper.structs.objectives.ReachSkillLevelObjective;
+import rocks.gravili.notquests.paper.structs.objectives.hooks.citizens.EscortNPCObjective;
 import rocks.gravili.notquests.paper.structs.triggers.ActiveTrigger;
+
+import java.time.Duration;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The QuestPlayer Object is initialized for every player, once they join the server - loading its data from the database.
@@ -68,15 +62,19 @@ public class QuestPlayer {
     private final ArrayList<ActiveQuest> questsToComplete;
     private final ArrayList<ActiveQuest> questsToRemove;
     private final ArrayList<CompletedQuest> completedQuests; //has to accept multiple entries of the same value
-    private final HashMap<String, Location> locationsAndBeacons, activeLocationAndBeams;
-    //Tags
-    private final HashMap<String, Object> tags;
     private long questPoints;
+
+    private final HashMap<String, Location> locationsAndBeacons, activeLocationAndBeams;
+
     private ActiveObjective trackingObjective;
+
     private BossBar bossBar;
     private int lastBossBarActiveTimeInSeconds = 0;
+
+    //Tags
+    private final HashMap<String, Object> tags;
+
     private boolean hasActiveConditionObjectives = false;
-    private boolean hasActiveVariableObjectives = false;
 
     private Player player;
 
@@ -98,21 +96,14 @@ public class QuestPlayer {
         tags = new HashMap<>();
     }
 
-    public boolean isHasActiveConditionObjectives(){
-        return hasActiveConditionObjectives;
-    }
-
-    public boolean isHasActiveVariableObjectives(){
-        return hasActiveVariableObjectives;
-    }
 
     public void setHasActiveConditionObjectives(final boolean hasActiveConditionObjectives){
         this.hasActiveConditionObjectives = hasActiveConditionObjectives;
     }
-
-    public void setHasActiveVariableObjectives(final boolean hasActiveVariableObjectives){
-        this.hasActiveVariableObjectives = hasActiveVariableObjectives;
+    public boolean isHasActiveConditionObjectives(){
+        return hasActiveConditionObjectives;
     }
+
 
     public final Object getTagValue(final String tagIdentifier) {
         return tags.get(tagIdentifier.toLowerCase(Locale.ROOT));
@@ -130,18 +121,18 @@ public class QuestPlayer {
         return trackingObjective;
     }
 
+    public void trackBeacon(final String name, final Location location) {
+        clearBeacons();
+        getLocationsAndBeacons().put(name, location);
+        updateBeaconLocations(getPlayer());
+    }
+
     public void setTrackingObjective(ActiveObjective trackingObjective) {
         this.trackingObjective = trackingObjective;
         sendObjectiveProgress(trackingObjective);
         if(trackingObjective.getObjective().isShowLocation() && trackingObjective.getObjective().getLocation() != null){
             trackBeacon(trackingObjective.getObjectiveID() + "", trackingObjective.getObjective().getLocation());
         }
-    }
-
-    public void trackBeacon(final String name, final Location location) {
-        clearBeacons();
-        getLocationsAndBeacons().put(name, location);
-        updateBeaconLocations(getPlayer());
     }
 
     public void disableTrackingObjective(ActiveObjective activeObjective) {
@@ -416,9 +407,9 @@ public class QuestPlayer {
                 }
 
                 for (final Condition condition : quest.getQuest().getRequirements()) {
-                    final ConditionResult check = condition.check(this);
-                    if (!check.fulfilled()) {
-                        requirementsStillNeeded.append("\n").append(check.message());
+                    final String check = condition.check(this);
+                    if (!check.isBlank()) {
+                        requirementsStillNeeded.append("\n").append(check);
 
                     }
                 }
@@ -513,7 +504,6 @@ public class QuestPlayer {
 
 
     private void finishAddingQuest(final ActiveQuest activeQuest, final boolean triggerAcceptQuestTrigger, final boolean sendUpdateObjectivesUnlocked) {
-
         QuestFinishAcceptEvent questFinishAcceptEvent = new QuestFinishAcceptEvent(this, activeQuest, triggerAcceptQuestTrigger);
         if (Bukkit.isPrimaryThread()) {
             Bukkit.getScheduler().runTaskAsynchronously(main.getMain(), () -> {
@@ -527,7 +517,19 @@ public class QuestPlayer {
             return;
         }
 
-
+        //Override initial value
+        for (final ActiveObjective activeObjective : activeQuest.getActiveObjectives()) {
+            if (activeObjective.getObjective() instanceof ReachSkillLevelObjective) {
+                long progress = Api.getStats(this.getPlayer(), ((ReachSkillLevelObjective) activeObjective.getObjective()).getSkillToLevelUp());
+                if ( progress <= 0) {
+                    activeObjective.addProgress(activeObjective.getObjective().getProgressNeeded());
+            }
+                else {
+                    activeObjective.addProgress(progress);
+                }
+            }
+        }
+        this.
         activeQuests.add(activeQuest);
 
         activeQuest.updateObjectivesUnlocked(sendUpdateObjectivesUnlocked, triggerAcceptQuestTrigger);
@@ -955,9 +957,7 @@ public class QuestPlayer {
     }
 
     public void updateConditionObjectives(final Player player) {
-        //sendDebugMessage("updateConditionObjectives was called...");
-        if (!isHasActiveConditionObjectives() && !isHasActiveVariableObjectives()) {
-            //sendDebugMessage("   No active objectives to update.");
+        if (!isHasActiveConditionObjectives()) {
             return;
         }
         for (final ActiveQuest activeQuest : getActiveQuests()) {
@@ -971,18 +971,12 @@ public class QuestPlayer {
                     if (condition == null) {
                         continue;
                     }
-                    if (!condition.check(this).fulfilled()) {
+                    if (!condition.check(this).isBlank()) {
                         continue;
                     }
 
                     activeObjective.addProgress(1);
 
-                } else if(activeObjective.getObjective() instanceof final NumberVariableObjective numberVariableObjective) {
-                    //sendDebugMessage("Found numbervariableobjective to update!");
-                    if (numberVariableObjective.isCheckOnlyWhenCorrespondingVariableValueChanged() || !activeObjective.isUnlocked()) {
-                        continue;
-                    }
-                    numberVariableObjective.updateProgress(activeObjective);
                 }
             }
             activeQuest.removeCompletedObjectives(true);
@@ -992,6 +986,8 @@ public class QuestPlayer {
 
 
     public void onQuit(final Player player){
+        main.getTagManager().onQuit(this, player);
+
         if (getActiveQuests().size() > 0) {
             for (final ActiveQuest activeQuest : getActiveQuests()) {
 
@@ -1007,16 +1003,15 @@ public class QuestPlayer {
 
     public void onQuitAsync(final Player player){
         bossBar = null;
-        main.getTagManager().onQuit(this, player);
     }
 
     public void onJoin(final Player player){
         this.player = player;
+        main.getTagManager().onJoin(this, player);
     }
 
     public void onJoinAsync(final Player player){
         this.player = player;
-        main.getTagManager().onJoin(this, player);
     }
 
     public final boolean isCurrentlyLoading() {
